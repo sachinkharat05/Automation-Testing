@@ -1,3 +1,4 @@
+#Stores the required Python packages: Flask, Playwright, and Pytest.
 
 playwright
 pytest

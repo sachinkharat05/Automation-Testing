@@ -1,19 +1,21 @@
+#Starts the Flask server automatically and provides the URL for testing.
 
 import pytest
 import threading
 from werkzeug.serving import make_server
 from app import app, users
 
-
 @pytest.fixture
 def base_url():
 
     users.clear()
+
     server = make_server("127.0.0.1", 0, app)
 
     thread = threading.Thread(
-        target=server.serve_forever,daemon=True)
-
+        target=server.serve_forever,
+        daemon=True
+    )
     thread.start()
 
     yield f"http://127.0.0.1:{server.server_port}"
