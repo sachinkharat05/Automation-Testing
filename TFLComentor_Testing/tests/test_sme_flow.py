@@ -13,15 +13,15 @@ def test_sme_complete_flow():
         page.locator("text=Sign In").click()
         page.wait_for_url("**/models/membership/Login")
 
-        # 3. Perform Login as SME (using credentials: 7972520102 / 12345)
+        # 3. Perform Login as SME (Credentials: 7972520102 / 12345)
         login_page = LoginPage(page)
         login_page.login(contact="7972520102", role="SME", password="12345")
         print("SME logged in successfully!")
 
         # 4. Verify SME Dashboard
         page.wait_for_url("**/models/membership/dashboard")
-        expect(page.locator("text=SME Dashboard")).to_be_visible()
-        expect(page.locator("text=Nirjala Naik")).to_be_visible()
+        expect(page.get_by_text("SME Dashboard", exact=False)).to_be_visible()
+        expect(page.get_by_text("Nirjala Naik", exact=False)).to_be_visible()
         print("SME Dashboard loaded successfully!")
 
         # 5. Click on 'Tests Created' card
@@ -40,27 +40,20 @@ def test_sme_complete_flow():
             test_name="Python",
             difficulty="BEGINNER",
             description="oops concept",
-            duration="42"
+            duration="5"
         )
         print("New Test created successfully!")
 
-        # 8. Click on 'Add Questions' button
+        # 8. Click 'Select Questions' button on Question Setup page
         page.wait_for_url("**/models/question-options")
-        sme_dashboard.click_add_questions_button()
-        print("Navigated to Create Question page successfully!")
+        sme_dashboard.click_select_questions_button()
+        print("Clicked on 'Select Questions' button successfully!")
 
-        # 9. Fill Question Form and Click Submit
-        sme_dashboard.fill_and_submit_question(
-            question_text="What is a class in Python?",
-            opt_a="A loop",
-            opt_b="A blueprint for creating objects",
-            opt_c="A variable",
-            opt_d="A package",
-            correct_opt="Option B"
-        )
-        print("Question submitted successfully!")
+        # 9. Select questions from the list
+        sme_dashboard.select_questions_and_save()
+        print("Questions selected and SME flow completed successfully!")
 
-        # Keep browser open to verify results
+        # Keep browser open to verify
         input("Press ENTER to close browser...")
         browser.close()
 

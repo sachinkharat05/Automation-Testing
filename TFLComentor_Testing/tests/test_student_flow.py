@@ -20,26 +20,25 @@ def test_student_assessment_flow():
 
         # 4. Verify Student Dashboard
         page.wait_for_url("**/models/membership/dashboard")
-        expect(page.locator("text=Hello, Sachin Kharat (Student)")).to_be_visible()
+        expect(page.get_by_text("Hello, Sachin Kharat (Student)", exact=True)).to_be_visible()
         print("Student Dashboard loaded successfully!")
 
-        # 5. Handle Upcoming Assessment click
+        # 5. Click on 'Upcoming Assessments' card
         student_dashboard = StudentDashboardPage(page)
-        
-        try:
-            # प्रथम Upcoming Assessments कार्डवर क्लिक करण्याचा प्रयत्न
-            page.locator("text=Upcoming Assessments").click(force=True)
-            print("Clicked on 'Upcoming Assessments' successfully!")
-        except Exception as e:
-            print("Trying to click via notification...", e)
-            try:
-                # जर कार्डवर क्लिक नाही झाले, तर नोटिफिकेशनवर क्लिक करणे
-                page.locator("text=Assessment Scheduled").first.click(force=True)
-                print("Clicked on Assessment Notification successfully!")
-            except Exception as ex:
-                print("Click failed:", ex)
+        student_dashboard.click_upcoming_assessments()
+        print("Clicked on 'Upcoming Assessments' card successfully!")
 
-        # Keep browser open to verify
+        # 6. Click 'Start' button on Upcoming Assessments page
+        page.wait_for_url("**/models/upcoming-assessment")
+        student_dashboard.click_start_assessment()
+        print("Clicked on 'Start' assessment button successfully!")
+
+        # 7. Answer all 5 questions sequentially and Submit
+        page.wait_for_url("**/models/assessment/start/**")
+        student_dashboard.complete_all_five_questions()
+        print("All 5 questions answered and assessment submitted successfully!")
+
+        # Keep browser open to verify results page
         input("Press ENTER to close browser...")
         browser.close()
 
