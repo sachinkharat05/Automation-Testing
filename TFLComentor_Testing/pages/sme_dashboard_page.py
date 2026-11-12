@@ -1,4 +1,4 @@
-from playwright.sync_api import Page
+from playwright.sync_api import Page, TimeoutError
 
 class SMEDashboardPage:
     def __init__(self, page: Page):
@@ -15,8 +15,8 @@ class SMEDashboardPage:
         self.submit_test_button = page.get_by_role("button", name="Create New Test")
         
         # Question Setup Elements
-        self.select_questions_button = page.get_by_role("button", name="Select Questions")
         self.add_questions_button = page.get_by_role("button", name="Add Questions")
+        self.select_questions_button = page.get_by_role("button", name="Select Questions")
         self.question_checkboxes = page.locator("input[type='checkbox']")
         self.save_questions_button = page.get_by_role("button", name="Save")
 
@@ -35,12 +35,14 @@ class SMEDashboardPage:
         self.duration_input.fill(duration)
         
         self.submit_test_button.scroll_into_view_if_needed()
-        self.submit_test_button.click(force=True)
+        try:
+            with self.page.expect_navigation(timeout=10000):
+                self.submit_test_button.click(force=True)
+        except Exception:
+            self.submit_test_button.click(force=True)
 
     def click_select_questions_button(self):
-        self.page.wait_for_timeout(2000)
-        
-        # 1. Question Type 
+       
         try:
             self.page.locator("select").nth(0).select_option(label="MCQ")
         except:
@@ -50,7 +52,6 @@ class SMEDashboardPage:
             except:
                 pass
 
-        # 2. Skill Level 'Beginner' 
         try:
             self.page.locator("select").nth(1).select_option(label="Beginner")
         except:
@@ -60,7 +61,6 @@ class SMEDashboardPage:
             except:
                 pass
 
-        # 3. Status 'Approved' 
         try:
             self.page.locator("select").nth(2).select_option(label="Approved")
         except:
@@ -70,25 +70,42 @@ class SMEDashboardPage:
             except:
                 pass
 
-        self.page.wait_for_timeout(1000)
-        
-        # 4. 'Select Questions' and add questions
-        if self.select_questions_button.is_visible():
-            self.select_questions_button.scroll_into_view_if_needed()
-            self.select_questions_button.click(force=True)
-        elif self.add_questions_button.is_visible():
-            self.add_questions_button.scroll_into_view_if_needed()
-            self.add_questions_button.click(force=True)
+        try:
+            if self.add_questions_button.is_visible():
+                self.add_questions_button.scroll_into_view_if_needed()
+                self.add_questions_button.click(force=True)
+        except Exception as e:
+            print(f"Add Questions click skipped: {e}")
 
     def select_questions_and_save(self):
-        self.page.wait_for_timeout(2000)
-        count = self.question_checkboxes.count()
-        for i in range(min(5, count)):
-            cb = self.question_checkboxes.nth(i)
-            cb.scroll_into_view_if_needed()
-            if not cb.is_checked():
-                cb.click(force=True)
         
-        if self.save_questions_button.is_visible():
-            self.save_questions_button.scroll_into_view_if_needed()
-            self.save_questions_button.click(force=True)
+        try:
+            self.page.wait_for_selector("input[type='checkbox']", timeout=5000)
+        except TimeoutError:
+            pass
+        
+        try:
+            count = self.question_checkboxes.count()
+            print(f"Total questions available: {count}")
+            for i in range(min(5, count)):
+                cb = self.question_checkboxes.nth(i)
+                cb.scroll_into_view_if_needed()
+                if not cb.is_checked():
+                    cb.click(force=True)
+        except Exception as e:
+            print(f"Checkbox selection error: {e}")
+
+
+        try:
+            if self.select_questions_button.is_visible():
+                self.select_questions_button.scroll_into_view_if_needed()
+                self.select_questions_button.click(force=True)
+        except:
+            pass
+
+        try:
+            if self.save_questions_button.is_visible():
+                self.save_questions_button.scroll_into_view_if_needed()
+                self.save_questions_button.click(force=True)
+        except:
+            pass

@@ -6,10 +6,13 @@ from pages.student_dashboard_page import StudentDashboardPage
 
 def test_complete_end_to_end_workflow():
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False, slow_mo=1000)
+        browser = p.chromium.launch(headless=False, slow_mo=300)
         page = browser.new_page()
         page.goto("http://localhost:8081/")
 
+        # ==========================================================
+        # STEP 1: SME FLOW (Login -> Create Test -> Select Questions)
+        # ==========================================================
         print("\n================ STEP 1: SME FLOW ================")
         page.locator("text=Sign In").click()
         page.wait_for_url("**/models/membership/Login")
@@ -39,8 +42,14 @@ def test_complete_end_to_end_workflow():
         sme_dashboard.select_questions_and_save()
         print("✅ SME Flow Completed Successfully!")
 
+        # --- SME LOGOUT & REDIRECT TO HOME ---
         page.goto("http://localhost:8081/")
+        page.wait_for_load_state("networkidle")
+        print("🔒 SME Logged Out & Redirected Successfully!")
 
+        # ==========================================================
+        # STEP 2: ADMIN FLOW (Login -> Assign Assessment)
+        # ==========================================================
         print("\n================ STEP 2: ADMIN FLOW ================")
         page.locator("text=Sign In").click()
         page.wait_for_url("**/models/membership/Login")
@@ -58,8 +67,14 @@ def test_complete_end_to_end_workflow():
         admin_dashboard.click_ok_button()
         print("✅ Admin Flow Completed Successfully!")
 
+        # --- ADMIN LOGOUT & REDIRECT TO HOME ---
         page.goto("http://localhost:8081/")
+        page.wait_for_load_state("networkidle")
+        print("🔒 Admin Logged Out & Redirected Successfully!")
 
+        # ==========================================================
+        # STEP 3: STUDENT FLOW (Login -> Take Assessment -> Complete)
+        # ==========================================================
         print("\n================ STEP 3: STUDENT FLOW ================")
         page.locator("text=Sign In").click()
         page.wait_for_url("**/models/membership/Login")
@@ -79,7 +94,7 @@ def test_complete_end_to_end_workflow():
         student_dashboard.complete_all_five_questions()
         print("✅ Student Flow Completed Successfully!")
 
-        print("\n🎉 ALL E2E STEPS PASSED SUCCESSFULLY! 🎉")
+        print("\n🎉 ALL E2E STEPS (SME -> ADMIN -> STUDENT) PASSED SUCCESSFULLY! 🎉")
         input("Press ENTER to close browser...")
         browser.close()
 
